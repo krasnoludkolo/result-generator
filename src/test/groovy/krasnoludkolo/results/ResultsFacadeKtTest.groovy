@@ -1,28 +1,41 @@
 package krasnoludkolo.results
 
 import io.krasnoludkolo.results.ResultsFacade
+import io.krasnoludkolo.results.api.FixtureDTO
 import io.krasnoludkolo.results.api.GenerationErrors
+import io.vavr.collection.List
 import spock.lang.Specification
 
 class ResultsFacadeKtTest extends Specification {
 
-    def "Generate league"() {
+    def "Should generate league without exceptions"() {
         given:
         def facade = ResultsFacade.@Factory.createInMemory()
 
         when:
-        def league = facade.generateLeague(3, "test")
+        def league = facade.generateLeague(4, "test")
 
         then:
         league.isRight()
     }
 
-    def "Get generated league"() {
+    def "League name should not be empty"() {
         given:
         def facade = ResultsFacade.@Factory.createInMemory()
 
         when:
-        def league = facade.generateLeague(3, "test").get()
+        def error = facade.generateLeague(4, "").getLeft()
+
+        then:
+        error == GenerationErrors.EMPTY_LEAGUE_NAME
+    }
+
+    def "Should get already generated league by uuid"() {
+        given:
+        def facade = ResultsFacade.@Factory.createInMemory()
+
+        when:
+        def league = facade.generateLeague(4, "test").get()
 
         then:
         facade.getLeagueById(league.uuid).get() == league
@@ -42,6 +55,20 @@ class ResultsFacadeKtTest extends Specification {
         n << [-2, -1, 0, 1, 2]
     }
 
+    def "Number of teams should not be odd"() {
+        given:
+        def facade = ResultsFacade.@Factory.createInMemory()
+
+        when:
+        def error = facade.generateLeague(n, "test").getLeft()
+
+        then:
+        error == GenerationErrors.ODD_TEAM_NUMBER
+
+        where:
+        n << [3, 5, 7, 11, 17]
+    }
+
 
     def "League should have 2(n-1) rounds"() {
         given:
@@ -55,11 +82,63 @@ class ResultsFacadeKtTest extends Specification {
 
         where:
         n  | expected
-        3  | 4
         4  | 6
-        5  | 8
+        6  | 10
+        10 | 18
         16 | 30
     }
 
+    def "Team should have n-1 distinct rivals"() {
+        given:
+        def facade = ResultsFacade.@Factory.createInMemory()
+
+        when:
+        def league = facade.generateLeague(n, "test").get()
+
+        then:
+        getTeamRivals('a',league.rounds).distinct().size() == expected
+
+        where:
+        n  | expected
+        4  | 3
+        6  | 5
+        10 | 9
+        16 | 15
+    }
+
+    def "Team should have 2(n-1) fixtures"() {
+        given:
+        def facade = ResultsFacade.@Factory.createInMemory()
+
+        when:
+        def league = facade.generateLeague(n, "test").get()
+
+        then:
+        league.rounds.flatMap{it.filter{isInFixture('a',it)}}.size() == expected
+
+        where:
+        n  | expected
+        4  | 6
+        6  | 10
+        10 | 18
+        16 | 30
+    }
+
+
+
+
+    def getTeamRivals(String name, List<List<FixtureDTO>> rounds) {
+        return rounds
+                .flatMap { it.filter { isInFixture(name, it) } }
+                .map { getRival(name, it) }
+    }
+
+    def isInFixture(String name, FixtureDTO fixture) {
+        return fixture.host == name || fixture.guest == name
+    }
+
+    def getRival(String name, FixtureDTO fixture) {
+        return fixture.guest == name ? fixture.host : fixture.guest
+    }
 
 }
