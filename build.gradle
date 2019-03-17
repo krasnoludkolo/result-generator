@@ -3,7 +3,7 @@ plugins {
     id 'groovy'
 }
 
-group 'io.krasnoludkolo'
+group 'krasnoludkolo'
 version '1.0'
 
 repositories {
@@ -11,6 +11,7 @@ repositories {
 }
 
 dependencies {
+    compile "io.vavr:vavr-kotlin:0.10.0"
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     testCompile 'org.spockframework:spock-core:1.2-groovy-2.5'
 }
