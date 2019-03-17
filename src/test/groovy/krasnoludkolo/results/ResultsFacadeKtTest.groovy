@@ -33,13 +33,33 @@ class ResultsFacadeKtTest extends Specification {
         def facade = ResultsFacade.@Factory.createInMemory()
 
         when:
-        def error = facade.generateLeague(-2, "test").getLeft()
-        def error1 = facade.generateLeague(0, "test").getLeft()
-        def error2 = facade.generateLeague(2, "test").getLeft()
+        def error = facade.generateLeague(n, "test").getLeft()
 
         then:
         error == GenerationErrors.NOT_ENOUGH_TEAMS
-        error1 == GenerationErrors.NOT_ENOUGH_TEAMS
-        error2 == GenerationErrors.NOT_ENOUGH_TEAMS
+
+        where:
+        n << [-2, -1, 0, 1, 2]
     }
+
+
+    def "League should have 2(n-1) rounds"() {
+        given:
+        def facade = ResultsFacade.@Factory.createInMemory()
+
+        when:
+        def league = facade.generateLeague(n, "test").get()
+
+        then:
+        league.getRounds().size() == expected
+
+        where:
+        n  | expected
+        3  | 4
+        4  | 6
+        5  | 8
+        16 | 30
+    }
+
+
 }
