@@ -21,6 +21,8 @@ class ResultsFacade private constructor(val repo: Repository<League>) {
     fun generateLeague(numberOfTeams: Int, name: String): Either<GenerationErrors, LeagueDTO> {
         if(numberOfTeams<3){
             return Either.left(GenerationErrors.NOT_ENOUGH_TEAMS)
+        } else if(name.isEmpty()){
+            return Either.left(GenerationErrors.EMPTY_LEAGUE_NAME)
         }
         return League
                 .generate(name, numberOfTeams)

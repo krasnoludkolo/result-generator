@@ -96,7 +96,7 @@ class ResultsFacadeKtTest extends Specification {
         def league = facade.generateLeague(n, "test").get()
 
         then:
-        getTeamRivals('a',league.rounds).distinct().size() == expected
+        getTeamRivals('a', league.rounds).distinct().size() == expected
 
         where:
         n  | expected
@@ -114,7 +114,7 @@ class ResultsFacadeKtTest extends Specification {
         def league = facade.generateLeague(n, "test").get()
 
         then:
-        league.rounds.flatMap{it.filter{isInFixture('a',it)}}.size() == expected
+        league.rounds.flatMap { it.filter { isInFixture('a', it) } }.size() == expected
 
         where:
         n  | expected
@@ -124,7 +124,31 @@ class ResultsFacadeKtTest extends Specification {
         16 | 30
     }
 
+    def "in each round team should have max one fixture"() {
+        given:
+        def facade = ResultsFacade.@Factory.createInMemory()
 
+        when:
+        def league = facade.generateLeague(n, "test").get()
+
+        then:
+
+        league.rounds != List.empty()
+
+        league.rounds
+                .map { it.flatMap{ List.of(it.host, it.guest) } }
+                .forEach {
+            it.size() == it.distinct().size()
+        }
+
+        where:
+        n  | _
+        4  | _
+        6  | _
+        10 | _
+        16 | _
+
+    }
 
 
     def getTeamRivals(String name, List<List<FixtureDTO>> rounds) {

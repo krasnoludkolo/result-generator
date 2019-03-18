@@ -12,5 +12,14 @@ data class Fixture(
     val leagueUUID: UUID,
     val fixtureResult: FixtureResult
 ) {
+
+    constructor(host: String,guest: String) : this(UUID.randomUUID(),host,guest,0, UUID.randomUUID(),FixtureResult.NOT_SET)
+
+
+
     fun toDTO(): FixtureDTO = FixtureDTO(uuid,host,guest,round,leagueUUID,fixtureResult)
+
+    override fun toString(): String {
+        return "Fixture(host='$host', guest='$guest')"
+    }
 }
