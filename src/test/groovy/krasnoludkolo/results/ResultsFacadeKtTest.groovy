@@ -77,13 +77,15 @@ class ResultsFacadeKtTest extends Specification {
         when:
         def league = facade.generateLeague(n, "test").get()
 
+        def map = league.getRounds().map { it.map { f -> f.host + ":" + f.guest } }
         then:
-        league.getRounds().size() == expected
+        map.size() == expected
 
         where:
         n  | expected
         4  | 6
         6  | 10
+        8  | 14
         10 | 18
         16 | 30
     }
@@ -136,10 +138,10 @@ class ResultsFacadeKtTest extends Specification {
         league.rounds != List.empty()
 
         league.rounds
-                .map { it.flatMap{ List.of(it.host, it.guest) } }
+                .map { it.flatMap { List.of(it.host, it.guest) } }
                 .forEach {
-            it.size() == it.distinct().size()
-        }
+                    assert it.size() == it.distinct().size()
+                }
 
         where:
         n  | _

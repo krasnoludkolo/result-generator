@@ -2,9 +2,7 @@ package io.krasnoludkolo.results
 
 import io.krasnoludkolo.results.api.GenerationErrors
 import io.krasnoludkolo.results.api.LeagueDTO
-import io.vavr.Tuple
 import io.vavr.collection.List
-import io.vavr.collection.Map
 import io.vavr.control.Either
 import java.util.*
 
@@ -30,22 +28,48 @@ class League private constructor(private val name: String, numberOfTeams: Int) {
     private fun generateFor(numberOfTeams: Int) {
         val teams = Teams.teams.take(numberOfTeams)
 
-        var combinations = teams.combinations(2).map { Fixture(it[0],it[1]) }
+        var combinations = teams.combinations(2).map { Fixture(it[0], it[1]) }
 
-        println(combinations)
-
-        while (combinations.size()>0){
-            rounds = rounds
-                .append(combinations.take(numberOfTeams/2))
-                .append(combinations.takeRight(numberOfTeams/2))
-            combinations = combinations.drop(numberOfTeams/2).dropRight(numberOfTeams/2)
+        while (!combinations.isEmpty) {
+            val round = generateRound(combinations, numberOfTeams / 2)
+            combinations = combinations.removeAll(round)
+            rounds = rounds.append(round)
         }
 
         rounds = rounds.appendAll(rounds)
     }
 
+    private fun generateRound(fixtures: List<Fixture>, fixturesInRound: Int): List<Fixture> {
+        fun generateRound(alreadyTaken: List<Fixture>, availableFixtures: List<Fixture>): List<Fixture> {
+            if (alreadyTaken.size() == fixturesInRound) {
+                return alreadyTaken
+            } else if (availableFixtures.size() == 1) {
+                if (alreadyTaken.size() + 1 == fixturesInRound) {
+                    return alreadyTaken.append(availableFixtures.head())
+                }
+                return List.empty()
+            } else if (availableFixtures.size() == 0) {
+                return List.empty()
+            }
 
-        fun toDTO(): LeagueDTO {
-            return LeagueDTO(id, name, rounds.map { it.map { it.toDTO() } })
+
+            return availableFixtures
+                    .find { fix: Fixture ->
+                        !generateRound(alreadyTaken.append(fix), availableFixtures.removeAll { f -> f.containsOneOfTeams(fix) }).isEmpty
+                    }
+                    .map {
+                        generateRound(alreadyTaken.append(it), availableFixtures.removeAll { f -> f.containsOneOfTeams(it) })
+                    }
+                    .getOrElse { List.empty<Fixture>() }
+
         }
+
+        return generateRound(List.empty(), fixtures)
+
     }
+
+
+    fun toDTO(): LeagueDTO {
+        return LeagueDTO(id, name, rounds.map { it.map { it.toDTO() } })
+    }
+}
