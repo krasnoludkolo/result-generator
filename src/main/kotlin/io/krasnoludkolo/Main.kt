@@ -1,8 +1,25 @@
 package io.krasnoludkolo
 
-import io.krasnoludkolo.results.ResultsFacade
+import io.javalin.Javalin
+import io.javalin.apibuilder.ApiBuilder.get
+import io.javalin.apibuilder.ApiBuilder.path
+import io.krasnoludkolo.results.ResultModule
 
 fun main(args: Array<String>) {
 
-    val resultsFacade = ResultsFacade.createInMemory()
+    val app = Javalin.create().start(7000)
+    val module = ResultModule()
+
+
+    app.routes {
+        module.api()
+        path("/status"){
+            get("/"){
+                it.result("Live")
+                it.status(200)
+            }
+        }
+    }
+
+
 }
