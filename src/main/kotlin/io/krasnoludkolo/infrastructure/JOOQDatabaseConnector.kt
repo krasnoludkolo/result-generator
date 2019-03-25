@@ -1,6 +1,7 @@
 package io.krasnoludkolo.infrastructure
 
 import io.vavr.collection.List
+import io.vavr.collection.Stream
 import io.vavr.control.Option
 import org.jooq.DSLContext
 import org.jooq.Record
@@ -8,7 +9,7 @@ import org.jooq.Result
 import org.jooq.SQLDialect
 import org.jooq.impl.DSL
 import java.sql.SQLException
-import java.util.*
+import java.util.UUID
 import java.util.logging.Level
 import java.util.logging.Logger
 
@@ -35,8 +36,9 @@ abstract class JOOQDatabaseConnector<T> : Repository<T> {
             dbConnectionInfo.createConnection().use { connection ->
                 val create = DSL.using(connection, SQLDialect.POSTGRES)
                 val result = findOneQuery(create, uuid)
-                val entity = convertRecordToEntity(result[0])
-                return Option.of(entity)
+                return Stream.ofAll(result)
+                    .map { convertRecordToEntity(it) }
+                    .headOption()
             }
         } catch (e: SQLException) {
             LOGGER.log(Level.SEVERE, e.message)
