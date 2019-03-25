@@ -1,1 +1,1 @@
-java -jar build/libs/result-generator-1.0.jar
+web: java -jar build/libs/result-generator-1.0.jar
