@@ -30,7 +30,7 @@ compileTestKotlin {
 }
 
 task stage {
-    dependsOn clean, installDist
+    dependsOn build, installDist
 }
 
 jar {
