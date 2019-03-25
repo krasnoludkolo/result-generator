@@ -3,7 +3,7 @@ package io.krasnoludkolo
 import io.javalin.Javalin
 import io.javalin.apibuilder.ApiBuilder.get
 import io.javalin.apibuilder.ApiBuilder.path
-import io.krasnoludkolo.results.ResultModule
+import io.krasnoludkolo.results.infrastructure.ResultModule
 
 fun main(args: Array<String>) {
 

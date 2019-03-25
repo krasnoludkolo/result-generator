@@ -1,4 +1,4 @@
-package io.krasnoludkolo.results
+package io.krasnoludkolo.results.domain
 
 import io.krasnoludkolo.infrastructure.InMemoryRepository
 import io.krasnoludkolo.infrastructure.Repository
@@ -14,7 +14,8 @@ class ResultsFacade private constructor(val repo: Repository<League>) {
 
     companion object Factory {
 
-        fun createInMemory(): ResultsFacade = ResultsFacade(InMemoryRepository())
+        fun createInMemory(): ResultsFacade =
+            ResultsFacade(InMemoryRepository())
 
     }
 
@@ -24,8 +25,7 @@ class ResultsFacade private constructor(val repo: Repository<League>) {
         } else if(name.isEmpty()){
             return Either.left(GenerationErrors.EMPTY_LEAGUE_NAME)
         }
-        return League
-                .generate(name, numberOfTeams)
+        return League.generate(name, numberOfTeams)
                 .peek { repo.save(it.id,it) }
                 .map { it.toDTO() }
     }

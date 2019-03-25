@@ -1,4 +1,4 @@
-package io.krasnoludkolo.results
+package io.krasnoludkolo.results.domain
 
 import io.krasnoludkolo.results.api.FixtureDTO
 import io.krasnoludkolo.results.api.FixtureResult

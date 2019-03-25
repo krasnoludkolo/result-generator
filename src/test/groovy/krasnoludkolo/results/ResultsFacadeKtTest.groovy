@@ -1,6 +1,6 @@
 package krasnoludkolo.results
 
-import io.krasnoludkolo.results.ResultsFacade
+import io.krasnoludkolo.results.domain.ResultsFacade
 import io.krasnoludkolo.results.api.FixtureDTO
 import io.krasnoludkolo.results.api.GenerationErrors
 import io.vavr.collection.List
