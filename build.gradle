@@ -4,6 +4,8 @@ plugins {
     id 'distribution'
 }
 
+apply plugin: 'kotlin'
+
 group 'krasnoludkolo'
 version '1.0'
 
@@ -31,3 +33,12 @@ task stage {
     dependsOn clean, installDist
 }
 
+jar {
+    manifest {
+        attributes(
+                'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
+                'Main-Class': 'io.krasnoludkolo.MainKt'
+        )
+    }
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+}
