@@ -9,7 +9,7 @@ internal class DatabaseConnectionInfo {
 
     private val username: String = System.getenv("DATA_USER")
     private val password: String = System.getenv("DATA_PASSWORD")
-    private val url: String = System.getenv("DATABASE_URL")
+    private val url: String = System.getenv("DATA_URL")
 
     @Throws(SQLException::class)
     fun createConnection(): Connection {
