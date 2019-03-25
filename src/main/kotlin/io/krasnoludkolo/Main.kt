@@ -7,19 +7,28 @@ import io.krasnoludkolo.results.infrastructure.ResultModule
 
 fun main(args: Array<String>) {
 
-    val app = Javalin.create().start(7000)
+    val app = Javalin.create().start(getHerokuAssignedPort())
     val module = ResultModule()
 
 
     app.routes {
         module.api()
-        path("/status"){
-            get("/"){
+        path("/status") {
+            get("/") {
                 it.result("Live")
                 it.status(200)
             }
         }
     }
 
+
+}
+
+fun getHerokuAssignedPort(): Int {
+    val port = System.getenv()["PORT"]
+    if (port != null) {
+        return Integer.parseInt(port)
+    }
+    return 7000
 
 }
