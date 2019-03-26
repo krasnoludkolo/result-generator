@@ -34,7 +34,7 @@ class LeagueRepository : JOOQDatabaseConnector<LeagueDTO>() {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun deleteQuery(create: DSLContext, uuid: UUID): SqlExecuteQuery {
+    override fun deleteQuery(uuid: UUID): SqlExecuteQuery {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
