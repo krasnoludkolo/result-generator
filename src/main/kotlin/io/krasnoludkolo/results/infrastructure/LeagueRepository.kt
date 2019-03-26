@@ -1,66 +1,45 @@
 package io.krasnoludkolo.results.infrastructure
 
-import io.krasnoludkolo.infrastructure.JOOQDatabaseConnector
-import io.krasnoludkolo.results.api.FixtureDTO
+import io.krasnoludkolo.infrastructure.database.JOOQDatabaseConnector
+import io.krasnoludkolo.infrastructure.database.ResultMapper
+import io.krasnoludkolo.infrastructure.database.SqlExecuteQuery
+import io.krasnoludkolo.infrastructure.database.SqlFetchQuery
 import io.krasnoludkolo.results.api.LeagueDTO
-import io.krasnoludkolo.results.domain.League
+import io.krasnoludkolo.results.infrastructure.sql.LeagueFindOneQuery
+import io.krasnoludkolo.results.infrastructure.sql.LeagueSaveQuery
 import io.vavr.collection.List
 import org.jooq.DSLContext
 import org.jooq.Record
-import org.jooq.Result
 import java.util.*
 
-import org.jooq.impl.DSL.field
-import org.jooq.impl.DSL.table
+class LeagueRepository : JOOQDatabaseConnector<LeagueDTO>() {
 
-class LeagueRepository: JOOQDatabaseConnector<LeagueDTO>() {
-
-    val LEAGUE_TABLE = "league"
-    val FIXTURE_TABLE = "fixture"
-
-    override fun saveQuery(create: DSLContext, entity: LeagueDTO) {
-        create
-            .insertInto(table(LEAGUE_TABLE))
-            .columns(field("uuid"),field("name"))
-            .values(entity.uuid,entity.name)
-            .execute()
-        entity.rounds.flatMap { it }.forEach{
-            create
-                .insertInto(table(FIXTURE_TABLE))
-                .columns(field("uuid"),field("host"),field("guest"))
-                .values(it.uuid,it.host,it.guest)
-                .execute()
-        }
-    }
-
-    override fun findOneQuery(create: DSLContext, uuid: UUID): Result<Record> {
-        return create
-            .select()
-            .from(table(LEAGUE_TABLE))
-            .where(field("uuid").eq(uuid))
-            .limit(1)
-            .fetch()
-    }
-
-    override fun convertRecordToEntity(record: Record): LeagueDTO {
-        return LeagueDTO(
-            record[0] as UUID,
-            record[1] as String,
+    val mapper = ResultMapper {
+        LeagueDTO(
+            it[0] as UUID,
+            it[1] as String,
             List.empty()
         )
     }
 
-    override fun findAllQuery(create: DSLContext): Result<Record> {
+    override fun saveQuery(uuid: UUID, t: LeagueDTO): SqlExecuteQuery {
+        return LeagueSaveQuery(t)
+    }
+
+    override fun findOneQuery(uuid: UUID): SqlFetchQuery<LeagueDTO> {
+        return LeagueFindOneQuery(uuid, mapper)
+    }
+
+    override fun findAllQuery(): SqlFetchQuery<LeagueDTO> {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun deleteQuery(create: DSLContext, uuid: UUID) {
+    override fun deleteQuery(create: DSLContext, uuid: UUID): SqlExecuteQuery {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun updateQuery(create: DSLContext, entity: LeagueDTO, uuid: UUID) {
+    override fun updateQuery(t: LeagueDTO, uuid: UUID): SqlExecuteQuery {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
-
 
 }

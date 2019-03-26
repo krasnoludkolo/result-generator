@@ -1,11 +1,9 @@
-package io.krasnoludkolo.infrastructure
+package io.krasnoludkolo.infrastructure.database
 
+import io.krasnoludkolo.infrastructure.Repository
 import io.vavr.collection.List
-import io.vavr.collection.Stream
 import io.vavr.control.Option
 import org.jooq.DSLContext
-import org.jooq.Record
-import org.jooq.Result
 import org.jooq.SQLDialect
 import org.jooq.impl.DSL
 import java.sql.SQLException
@@ -21,8 +19,8 @@ abstract class JOOQDatabaseConnector<T> : Repository<T> {
         try {
             val connection = dbConnectionInfo.createConnection()
             connection.use{
-                val create = DSL.using(it, SQLDialect.POSTGRES)
-                saveQuery(create, t)
+                val ctx = DSL.using(it, SQLDialect.POSTGRES)
+                saveQuery(uuid,t).execute(ctx)
             }
         } catch (e: SQLException) {
             LOGGER.log(Level.SEVERE, e.message)
@@ -34,11 +32,8 @@ abstract class JOOQDatabaseConnector<T> : Repository<T> {
     override fun findOne(uuid: UUID): Option<T> {
         try {
             dbConnectionInfo.createConnection().use { connection ->
-                val create = DSL.using(connection, SQLDialect.POSTGRES)
-                val result = findOneQuery(create, uuid)
-                return Stream.ofAll(result)
-                    .map { convertRecordToEntity(it) }
-                    .headOption()
+                val ctx = DSL.using(connection, SQLDialect.POSTGRES)
+                return findOneQuery(uuid).execute(ctx).headOption()
             }
         } catch (e: SQLException) {
             LOGGER.log(Level.SEVERE, e.message)
@@ -51,9 +46,8 @@ abstract class JOOQDatabaseConnector<T> : Repository<T> {
     override fun findAll(): List<T> {
         try {
             dbConnectionInfo.createConnection().use { connection ->
-                val create = DSL.using(connection, SQLDialect.POSTGRES)
-                val result = findAllQuery(create)
-                return convertToBetList(result)
+                val ctx = DSL.using(connection, SQLDialect.POSTGRES)
+                return findAllQuery().execute(ctx)
             }
         } catch (e: SQLException) {
             LOGGER.log(Level.SEVERE, e.message)
@@ -61,23 +55,12 @@ abstract class JOOQDatabaseConnector<T> : Repository<T> {
         }
 
     }
-
-
-    private fun convertToBetList(result: Result<Record>): List<T> {
-        var resultList = List.empty<T>()
-        for (record in result) {
-            val entity = convertRecordToEntity(record)
-            resultList = resultList.append(entity)
-        }
-        return resultList
-    }
-
 
     override fun delete(uuid: UUID) {
         try {
             dbConnectionInfo.createConnection().use { connection ->
                 val create = DSL.using(connection, SQLDialect.POSTGRES)
-                deleteQuery(create, uuid)
+                deleteQuery(create, uuid).execute(create)
             }
         } catch (e: SQLException) {
             LOGGER.log(Level.SEVERE, e.message)
@@ -86,12 +69,11 @@ abstract class JOOQDatabaseConnector<T> : Repository<T> {
 
     }
 
-
     override fun update(uuid: UUID, t: T) {
         try {
             dbConnectionInfo.createConnection().use { connection ->
                 val create = DSL.using(connection, SQLDialect.POSTGRES)
-                updateQuery(create, t, uuid)
+                updateQuery(t, uuid).execute(create)
             }
         } catch (e: SQLException) {
             LOGGER.log(Level.SEVERE, e.message)
@@ -100,17 +82,11 @@ abstract class JOOQDatabaseConnector<T> : Repository<T> {
     }
 
 
-    protected abstract fun saveQuery(create: DSLContext, entity: T)
-
-    protected abstract fun findOneQuery(create: DSLContext, uuid: UUID): Result<Record>
-
-    protected abstract fun convertRecordToEntity(record: Record): T
-
-    protected abstract fun findAllQuery(create: DSLContext): Result<Record>
-
-    protected abstract fun deleteQuery(create: DSLContext, uuid: UUID)
-
-    protected abstract fun updateQuery(create: DSLContext, entity: T, uuid: UUID)
+    abstract fun saveQuery(uuid: UUID, t: T): SqlExecuteQuery
+    abstract fun findOneQuery(uuid: UUID): SqlFetchQuery<T>
+    abstract fun findAllQuery(): SqlFetchQuery<T>
+    abstract fun deleteQuery(create: DSLContext, uuid: UUID): SqlExecuteQuery
+    abstract fun updateQuery(t: T, uuid: UUID): SqlExecuteQuery
 
     companion object {
 

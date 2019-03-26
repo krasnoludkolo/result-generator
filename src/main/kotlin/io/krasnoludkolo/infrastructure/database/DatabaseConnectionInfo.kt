@@ -1,4 +1,4 @@
-package io.krasnoludkolo.infrastructure
+package io.krasnoludkolo.infrastructure.database
 
 import java.sql.Connection
 import java.sql.DriverManager
@@ -15,6 +15,5 @@ internal class DatabaseConnectionInfo {
     fun createConnection(): Connection {
         return DriverManager.getConnection(url, username, password)
     }
-
 
 }
