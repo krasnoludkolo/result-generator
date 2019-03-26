@@ -46,7 +46,7 @@ class LeagueRepository: JOOQDatabaseConnector<LeagueDTO>() {
         return LeagueDTO(
             record[0] as UUID,
             record[1] as String,
-            record[2] as List<List<FixtureDTO>>
+            List.empty()
         )
     }
 
