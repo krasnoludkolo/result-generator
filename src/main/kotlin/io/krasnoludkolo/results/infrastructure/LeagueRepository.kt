@@ -14,7 +14,7 @@ import java.util.*
 
 class LeagueRepository : JOOQDatabaseConnector<LeagueDTO>() {
 
-    val mapper = ResultMapper {
+    private val mapper = ResultMapper {
         LeagueDTO(
             it[0] as UUID,
             it[1] as String,
