@@ -23,11 +23,13 @@ class LeagueRepository: JOOQDatabaseConnector<LeagueDTO>() {
             .insertInto(table(LEAGUE_TABLE))
             .columns(field("uuid"),field("name"))
             .values(entity.uuid,entity.name)
+            .execute()
         entity.rounds.flatMap { it }.forEach{
             create
                 .insertInto(table(FIXTURE_TABLE))
                 .columns(field("uuid"),field("host"),field("guest"))
                 .values(it.uuid,it.host,it.guest)
+                .execute()
         }
     }
 
