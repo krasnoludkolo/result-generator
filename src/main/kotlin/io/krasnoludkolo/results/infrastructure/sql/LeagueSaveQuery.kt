@@ -3,7 +3,7 @@ package io.krasnoludkolo.results.infrastructure.sql
 import io.krasnoludkolo.infrastructure.database.SqlExecuteQuery
 import io.krasnoludkolo.results.api.LeagueDTO
 import org.jooq.DSLContext
-import org.jooq.impl.DSL
+import org.jooq.impl.DSL.*
 
 class LeagueSaveQuery(private val entity:LeagueDTO):SqlExecuteQuery {
 
@@ -14,8 +14,8 @@ class LeagueSaveQuery(private val entity:LeagueDTO):SqlExecuteQuery {
 
     private fun saveLeague(create: DSLContext) {
         create
-            .insertInto(DSL.table(SqlConstants.LEAGUE_TABLE))
-            .columns(DSL.field("uuid"), DSL.field("name"))
+            .insertInto(table(SqlConstants.LEAGUE_TABLE))
+            .columns(field("uuid"), field("name"))
             .values(entity.uuid, entity.name)
             .execute()
     }
@@ -23,8 +23,8 @@ class LeagueSaveQuery(private val entity:LeagueDTO):SqlExecuteQuery {
     private fun saveFixtures(create: DSLContext) {
         entity.rounds.flatMap { it }.forEach {
             create
-                .insertInto(DSL.table(SqlConstants.FIXTURE_TABLE))
-                .columns(DSL.field("uuid"), DSL.field("host"), DSL.field("guest"))
+                .insertInto(table(SqlConstants.FIXTURE_TABLE))
+                .columns(field("uuid"), field("host"), field("guest"))
                 .values(it.uuid, it.host, it.guest)
                 .execute()
         }

@@ -8,7 +8,7 @@ import java.util.*
 
 class League private constructor(private val name: String, numberOfTeams: Int) {
 
-    val id: UUID = UUID.randomUUID()
+    private val id: UUID = UUID.randomUUID()
     private var rounds: List<List<Fixture>> = List.empty<List<Fixture>>()
 
     companion object {
@@ -30,10 +30,13 @@ class League private constructor(private val name: String, numberOfTeams: Int) {
 
         var combinations = teams.combinations(2).map { Fixture(it[0], it[1]) }
 
+        var i = 1
         while (!combinations.isEmpty) {
             val round = generateRound(combinations, numberOfTeams / 2)
             combinations = combinations.removeAll(round)
+            round.map { it.round == i }
             rounds = rounds.append(round)
+            i++
         }
 
         rounds = rounds.appendAll(rounds)
