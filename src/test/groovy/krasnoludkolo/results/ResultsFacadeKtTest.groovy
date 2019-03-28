@@ -152,6 +152,36 @@ class ResultsFacadeKtTest extends Specification {
 
     }
 
+    def "Fixtures should have correct round number"(){
+        given:
+        def facade = ResultsFacade.@Factory.createInMemory()
+
+        when:
+        def league = facade.generateLeague(n, "test").get()
+
+        then:
+
+        league.rounds != List.empty()
+
+        league.rounds
+                .zipWithIndex()
+                .forEach{
+                    def round = it._2+1
+                    it._1.forEach{
+                        f-> assert f.round==round
+                    }
+                }
+
+
+        where:
+        n  | _
+        4  | _
+        6  | _
+        10 | _
+        16 | _
+
+    }
+
 
     def getTeamRivals(String name, List<List<FixtureDTO>> rounds) {
         return rounds

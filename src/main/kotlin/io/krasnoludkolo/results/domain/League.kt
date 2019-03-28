@@ -8,8 +8,8 @@ import java.util.*
 
 class League private constructor(private val name: String, numberOfTeams: Int) {
 
-    private val id: UUID = UUID.randomUUID()
-    private var rounds: List<List<Fixture>> = List.empty<List<Fixture>>()
+    val id: UUID = UUID.randomUUID()
+    private var matchdays: List<List<Fixture>> = List.empty<List<Fixture>>()
 
     companion object {
 
@@ -22,27 +22,33 @@ class League private constructor(private val name: String, numberOfTeams: Int) {
     }
 
     init {
-        generateFor(numberOfTeams)
+        generateLeagueFor(numberOfTeams)
     }
 
-    private fun generateFor(numberOfTeams: Int) {
-        val teams = Teams.teams.take(numberOfTeams)
-
-        var combinations = teams.combinations(2).map { Fixture(it[0], it[1]) }
-
-        var i = 1
-        while (!combinations.isEmpty) {
-            val round = generateRound(combinations, numberOfTeams / 2)
-            combinations = combinations.removeAll(round)
-            round.map { it.round == i }
-            rounds = rounds.append(round)
-            i++
+    private fun generateLeagueFor(numberOfTeams: Int) {
+        fun generateRound(firstIndex: Int, combinations: List<Fixture>): List<List<Fixture>> {
+            fun generateFrom(matchdayIndex: Int, combinations: List<Fixture>): List<List<Fixture>> {
+                return when {
+                    combinations.isEmpty -> List.empty<List<Fixture>>()
+                    else -> {
+                        val matchday = generateMatchday(combinations, numberOfTeams / 2)
+                        return List.of(matchday.map { it.copy(matchday = matchdayIndex) })
+                            .appendAll(generateFrom(matchdayIndex.plus(1),combinations.removeAll(matchday)))
+                    }
+                }
+            }
+            return generateFrom(firstIndex,combinations)
         }
 
-        rounds = rounds.appendAll(rounds)
+        val teams = Teams.teams.take(numberOfTeams)
+        val combinations = teams.combinations(2).map { Fixture(it[0], it[1]) }
+        matchdays = generateRound(1, combinations)
+            .appendAll(
+                generateRound(numberOfTeams, combinations)
+            )
     }
 
-    private fun generateRound(fixtures: List<Fixture>, fixturesInRound: Int): List<Fixture> {
+    private fun generateMatchday(fixtures: List<Fixture>, fixturesInRound: Int): List<Fixture> {
         fun generateRound(alreadyTaken: List<Fixture>, availableFixtures: List<Fixture>): List<Fixture> {
             if (alreadyTaken.size() == fixturesInRound) {
                 return alreadyTaken
@@ -54,16 +60,18 @@ class League private constructor(private val name: String, numberOfTeams: Int) {
             } else if (availableFixtures.size() == 0) {
                 return List.empty()
             }
-
-
             return availableFixtures
-                    .find { fix: Fixture ->
-                        !generateRound(alreadyTaken.append(fix), availableFixtures.removeAll { f -> f.containsOneOfTeams(fix) }).isEmpty
-                    }
-                    .map {
-                        generateRound(alreadyTaken.append(it), availableFixtures.removeAll { f -> f.containsOneOfTeams(it) })
-                    }
-                    .getOrElse { List.empty<Fixture>() }
+                .find { fix: Fixture ->
+                    !generateRound(
+                        alreadyTaken.append(fix),
+                        availableFixtures.removeAll { f -> f.containsOneOfTeams(fix) }).isEmpty
+                }
+                .map {
+                    generateRound(
+                        alreadyTaken.append(it),
+                        availableFixtures.removeAll { f -> f.containsOneOfTeams(it) })
+                }
+                .getOrElse { List.empty<Fixture>() }
 
         }
 
@@ -71,8 +79,7 @@ class League private constructor(private val name: String, numberOfTeams: Int) {
 
     }
 
-
     fun toDTO(): LeagueDTO {
-        return LeagueDTO(id, name, rounds.map { it.map { it.toDTO() } })
+        return LeagueDTO(id, name, matchdays.map { it.map { it.toDTO() } })
     }
 }
