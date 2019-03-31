@@ -30,19 +30,13 @@ class Matchday private constructor(
         alreadyTaken: List<TwoTeamsSet>,
         availableFixtures: List<TwoTeamsSet>
     ): List<TwoTeamsSet> {
-        when {
-            alreadyTaken.size() == fixturesInRound -> return alreadyTaken
+        return when {
+            availableFixtures.size() == 1 ->
+                if (alreadyTaken.size() + 1 == fixturesInRound)
+                    alreadyTaken.append(availableFixtures.head())
+                    else List.empty()
 
-            availableFixtures.size() == 1 -> {
-                if (alreadyTaken.size() + 1 == fixturesInRound) {
-                    return alreadyTaken.append(availableFixtures.head())
-                }
-                return List.empty()
-            }
-
-            availableFixtures.size() == 0 -> return List.empty()
-
-            else -> return availableFixtures
+            else -> availableFixtures
                 .find { canGenerate(alreadyTaken, it, availableFixtures) }
                 .map {
                     generateRound(
