@@ -7,6 +7,5 @@ data class FixtureDTO(
     val host: String,
     val guest: String,
     val round: Int,
-    val leagueUUID: UUID,
     val fixtureResult: FixtureResult
 )

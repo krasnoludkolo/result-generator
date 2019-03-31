@@ -9,7 +9,7 @@ import java.util.*
 class League private constructor(private val name: String, numberOfTeams: Int) {
 
     val id: UUID = UUID.randomUUID()
-    private var matchdays: List<List<Fixture>> = List.empty<List<Fixture>>()
+    private val matchDays: List<Matchday>
 
     companion object {
 
@@ -22,64 +22,38 @@ class League private constructor(private val name: String, numberOfTeams: Int) {
     }
 
     init {
-        generateLeagueFor(numberOfTeams)
+        matchDays = generateLeagueFor(numberOfTeams)
     }
 
-    private fun generateLeagueFor(numberOfTeams: Int) {
-        fun generateRound(firstIndex: Int, combinations: List<Fixture>): List<List<Fixture>> {
-            fun generateFrom(matchdayIndex: Int, combinations: List<Fixture>): List<List<Fixture>> {
+    private fun generateLeagueFor(numberOfTeams: Int): List<Matchday> {
+        fun generateRound(firstIndex: Int, combinations: List<TwoTeamsSet>): List<Matchday> {
+            fun generateFrom(matchdayIndex: Int, possibleFixtures: List<TwoTeamsSet>): List<Matchday> {
                 return when {
-                    combinations.isEmpty -> List.empty<List<Fixture>>()
+                    possibleFixtures.isEmpty -> List.empty<Matchday>()
                     else -> {
-                        val matchday = generateMatchday(combinations, numberOfTeams / 2)
-                        return List.of(matchday.map { it.copy(matchday = matchdayIndex) })
-                            .appendAll(generateFrom(matchdayIndex.plus(1),combinations.removeAll(matchday)))
+                        val matchday = Matchday.generate(numberOfTeams, matchdayIndex, possibleFixtures)
+                        return List.of(matchday)
+                            .appendAll(
+                                generateFrom(
+                                    matchdayIndex.plus(1),
+                                    possibleFixtures.removeAll(matchday.getUsedCombinations())
+                                )
+                            )
                     }
                 }
             }
-            return generateFrom(firstIndex,combinations)
+            return generateFrom(firstIndex, combinations)
         }
 
         val teams = Teams.teams.take(numberOfTeams)
-        val combinations = teams.combinations(2).map { Fixture(it[0], it[1]) }
-        matchdays = generateRound(1, combinations)
+        val combinations = teams.combinations(2).map { TwoTeamsSet(it[0], it[1]) }
+        return generateRound(1, combinations)
             .appendAll(
                 generateRound(numberOfTeams, combinations)
             )
     }
 
-    private fun generateMatchday(fixtures: List<Fixture>, fixturesInRound: Int): List<Fixture> {
-        fun generateRound(alreadyTaken: List<Fixture>, availableFixtures: List<Fixture>): List<Fixture> {
-            if (alreadyTaken.size() == fixturesInRound) {
-                return alreadyTaken
-            } else if (availableFixtures.size() == 1) {
-                if (alreadyTaken.size() + 1 == fixturesInRound) {
-                    return alreadyTaken.append(availableFixtures.head())
-                }
-                return List.empty()
-            } else if (availableFixtures.size() == 0) {
-                return List.empty()
-            }
-            return availableFixtures
-                .find { fix: Fixture ->
-                    !generateRound(
-                        alreadyTaken.append(fix),
-                        availableFixtures.removeAll { f -> f.containsOneOfTeams(fix) }).isEmpty
-                }
-                .map {
-                    generateRound(
-                        alreadyTaken.append(it),
-                        availableFixtures.removeAll { f -> f.containsOneOfTeams(it) })
-                }
-                .getOrElse { List.empty<Fixture>() }
-
-        }
-
-        return generateRound(List.empty(), fixtures)
-
-    }
-
     fun toDTO(): LeagueDTO {
-        return LeagueDTO(id, name, matchdays.map { it.map { it.toDTO() } })
+        return LeagueDTO(id, name, matchDays.map { it.toFixtureDTOList() })
     }
 }

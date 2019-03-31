@@ -9,18 +9,19 @@ data class Fixture(
     val host: String,
     val guest: String,
     val matchday: Int,
-    val leagueUUID: UUID,
     val fixtureResult: FixtureResult
 ) {
 
-    constructor(host: String, guest: String) : this(UUID.randomUUID(), host, guest, 0, UUID.randomUUID(), FixtureResult.NOT_SET)
+    constructor(teams: TwoTeamsSet, matchday: Int) : this(UUID.randomUUID(),teams._1,teams._2,matchday,FixtureResult.NOT_SET)
 
     private fun containsTeam(name: String): Boolean = (host == name || guest == name)
 
     fun containsOneOfTeams(fixture: Fixture): Boolean = containsTeam(fixture.host) || containsTeam(fixture.guest)
 
+    fun containsOneOfTeams(fixture: Pair<String,String>): Boolean = containsTeam(fixture.first) || containsTeam(fixture.second)
 
-    fun toDTO(): FixtureDTO = FixtureDTO(uuid, host, guest, matchday, leagueUUID, fixtureResult)
+
+    fun toDTO(): FixtureDTO = FixtureDTO(uuid, host, guest, matchday, fixtureResult)
 
     override fun toString(): String {
         return "Fixture(host='$host', guest='$guest')"
