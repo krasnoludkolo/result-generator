@@ -34,7 +34,7 @@ class Matchday private constructor(
             availableFixtures.size() == 1 ->
                 if (alreadyTaken.size() + 1 == fixturesInRound)
                     alreadyTaken.append(availableFixtures.head())
-                    else List.empty()
+                else List.empty()
 
             else -> availableFixtures
                 .find { canGenerate(alreadyTaken, it, availableFixtures) }
