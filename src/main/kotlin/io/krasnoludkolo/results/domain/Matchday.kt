@@ -13,7 +13,6 @@ class Matchday private constructor(
     private val fixturesInRound = numberOfTeams / 2
 
     companion object {
-
         fun generate(numberOfTeams: Int, matchdayIndex: Int, combinations: List<TwoTeamsSet>): Matchday =
             Matchday(numberOfTeams, matchdayIndex, combinations)
     }
@@ -64,5 +63,4 @@ class Matchday private constructor(
     fun toFixtureDTOList(): List<FixtureDTO> {
         return fixtures.map { it.toDTO() }
     }
-
 }
