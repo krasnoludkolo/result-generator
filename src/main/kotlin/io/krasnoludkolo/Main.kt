@@ -5,23 +5,26 @@ import io.javalin.apibuilder.ApiBuilder.get
 import io.javalin.apibuilder.ApiBuilder.path
 import io.krasnoludkolo.results.infrastructure.ResultModule
 
-fun main(args: Array<String>) {
+fun main() {
 
     val app = Javalin.create().start(getHerokuAssignedPort())
     val module = ResultModule()
 
-
     app.routes {
         module.api()
-        path("/status") {
-            get("/") {
-                it.result("Live")
-                it.status(200)
-            }
-        }
+        statusEndpoint()
     }
 
 
+}
+
+private fun statusEndpoint() {
+    path("/status") {
+        get("/") {
+            it.result("Live")
+            it.status(200)
+        }
+    }
 }
 
 fun getHerokuAssignedPort(): Int {
