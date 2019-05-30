@@ -1,0 +1,29 @@
+# For a quick start check out our HTTP Requests collection (Tools|HTTP Client|Open HTTP Requests Collection).
+#
+# Following HTTP Request Live Templates are available:
+# * 'gtrp' and 'gtr' create a GET request with or without query parameters;
+# * 'ptr' and 'ptrp' create a POST request with a simple or parameter-like body;
+# * 'mptr' and 'fptr' create a POST request to submit a form with a text or file field (multipart/form-data);
+
+GET http://localhost:7000/temp/league/e5a5703a-05e9-41a8-9e62-f84d88542278
+Accept: */*
+Cache-Control: no-cache
+Accept: application/json
+
+<> 2019-05-30T104421.200.txt
+<> 2019-05-30T104315.200.txt
+<> 2019-05-30T104124.200.txt
+
+
+###
+
+POST http://localhost:7000/temp/
+Content-Type: application/json
+
+{
+  "host": "asd",
+  "guest": "dsa",
+  "round": 1
+}
+
+###

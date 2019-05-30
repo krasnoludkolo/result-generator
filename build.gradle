@@ -21,6 +21,7 @@ dependencies {
     compile 'io.javalin:javalin:2.7.0'
     compile "org.slf4j:slf4j-simple:1.7.25"
     compile "com.fasterxml.jackson.module:jackson-module-kotlin:2.9.+"
+    compile "io.vavr:vavr-jackson:0.10.0"
 
     compile 'org.postgresql:postgresql:+'
 
